@@ -80,7 +80,7 @@ def create_ticket_stamp(
     bbox_code = draw.textbbox((0, 0), code_text, font=font_small)
     code_w = bbox_code[2] - bbox_code[0]
     code_h = bbox_code[3] - bbox_code[1]
-    draw.text(
+    draw.text( 
         (base_img.size[0] - code_w - 20, base_img.size[1] - code_h - 20),
         code_text,
         fill="red",
