@@ -1,21 +1,24 @@
 from PIL import Image, ImageDraw, ImageFont
 
+
 def create_ticket_stamp(
     input_image_path,
     output_image_path,
     timestamp="18:31",
     ticket_code="S-4",
     english_word="Sample",
-    background_image_path="stamp_background.png"
+    background_image_path="stamp_background.png",
 ):
+    # 画像の読み込みとリサイズ
     base_img = Image.open(background_image_path).convert("RGBA")
     input_img = Image.open(input_image_path).convert("RGBA")
-
     input_img = input_img.resize(base_img.size)
 
+    # 合成と描画準備
     merged = Image.alpha_composite(input_img, base_img)
     draw = ImageDraw.Draw(merged)
 
+    # フォントの読み込み
     try:
         font_large = ImageFont.truetype("arial.ttf", 80)
         font_medium = ImageFont.truetype("arial.ttf", 40)
@@ -25,41 +28,77 @@ def create_ticket_stamp(
         font_medium = ImageFont.load_default()
         font_small = ImageFont.load_default()
 
-    center_x, center_y = base_img.size[0]//2, base_img.size[1]//2
+    # 円の中心・半径の設定
+    center_x = base_img.size[0] // 2
+    center_y = base_img.size[1] // 2
     radius_outer = 180
     radius_inner = 145
 
+    # 外枠と内枠の円を描画
     draw.ellipse(
-        [(center_x - radius_outer, center_y - radius_outer), (center_x + radius_outer, center_y + radius_outer)],
-        outline="red", width=8
+        [
+            (center_x - radius_outer, center_y - radius_outer),
+            (center_x + radius_outer, center_y + radius_outer),
+        ],
+        outline="red",
+        width=8,
     )
     draw.ellipse(
-        [(center_x - radius_inner, center_y - radius_inner), (center_x + radius_inner, center_y + radius_inner)],
-        outline="red", width=8
+        [
+            (center_x - radius_inner, center_y - radius_inner),
+            (center_x + radius_inner, center_y + radius_inner),
+        ],
+        outline="red",
+        width=8,
     )
 
+    # 「入場済」テキスト描画
     entered_text = "入場済"
-    text_w, text_h = draw.textsize(entered_text, font=font_medium)
-    draw.text((center_x - text_w/2, center_y - radius_outer + 20), entered_text, fill="red", font=font_medium)
-    draw.text((center_x - text_w/2, center_y + radius_outer - text_h - 20), entered_text, fill="red", font=font_medium)
+    bbox_entered = draw.textbbox((0, 0), entered_text, font=font_medium)
+    text_w = bbox_entered[2] - bbox_entered[0]
+    text_h = bbox_entered[3] - bbox_entered[1]
+    draw.text(
+        (center_x - text_w / 2, center_y - radius_outer + 20),
+        entered_text,
+        fill="red",
+        font=font_medium,
+    )
 
-    time_w, time_h = draw.textsize(timestamp, font=font_large)
-    draw.text((center_x - time_w/2, center_y - time_h/2), timestamp, fill="red", font=font_large)
+    # タイムスタンプ描画
+    bbox_time = draw.textbbox((0, 0), timestamp, font=font_large)
+    time_w = bbox_time[2] - bbox_time[0]
+    time_h = bbox_time[3] - bbox_time[1]
+    draw.text(
+        (center_x - time_w / 2, center_y - time_h / 2),
+        timestamp,
+        fill="red",
+        font=font_large,
+    )
 
+    # チケットコード描画
     code_text = f"{english_word} {ticket_code}"
-    code_w, code_h = draw.textsize(code_text, font=font_small)
-    draw.text((base_img.size[0] - code_w - 20, base_img.size[1] - code_h - 20), code_text, fill="red", font=font_small)
+    bbox_code = draw.textbbox((0, 0), code_text, font=font_small)
+    code_w = bbox_code[2] - bbox_code[0]
+    code_h = bbox_code[3] - bbox_code[1]
+    draw.text(
+        (base_img.size[0] - code_w - 20, base_img.size[1] - code_h - 20),
+        code_text,
+        fill="red",
+        font=font_small,
+    )
 
+    # 保存と表示
     merged.save(output_image_path)
     merged.show()
 
+
+# 実行例
 if __name__ == "__main__":
-    # 実行例（画像ファイル名は自分の環境に合わせて変えてください）
     create_ticket_stamp(
         input_image_path="your_uploaded_picture.jpg",
         output_image_path="ticket_with_stamp.png",
         timestamp="20:15",
         ticket_code="S-4",
         english_word="Sample",
-        background_image_path="stamp_background.png"
+        background_image_path="stamp_background.png",
     )
