@@ -8,34 +8,27 @@ def create_ticket_stamp(
     english_word="Sample",
     background_image_path="stamp_background.png"
 ):
-    # 背景画像読み込み（入場済みスタンプが押してある背景）
     base_img = Image.open(background_image_path).convert("RGBA")
-    # ユーザ画像読み込み
     input_img = Image.open(input_image_path).convert("RGBA")
 
-    # 背景画像サイズに合わせてユーザ画像をリサイズ
     input_img = input_img.resize(base_img.size)
 
-    # ユーザ画像の上に背景画像（スタンプ背景）を重ねる
     merged = Image.alpha_composite(input_img, base_img)
     draw = ImageDraw.Draw(merged)
 
-    # フォント読み込み（環境によってパスを調整してください）
     try:
-        font_large = ImageFont.truetype("arial.ttf", 80)   # 時刻用大きいサイズ
-        font_medium = ImageFont.truetype("arial.ttf", 40)  # 「入場済」テキスト用
-        font_small = ImageFont.truetype("arial.ttf", 30)   # 英単語と番号用
+        font_large = ImageFont.truetype("arial.ttf", 80)
+        font_medium = ImageFont.truetype("arial.ttf", 40)
+        font_small = ImageFont.truetype("arial.ttf", 30)
     except:
         font_large = ImageFont.load_default()
         font_medium = ImageFont.load_default()
         font_small = ImageFont.load_default()
 
-    # 赤い円スタンプを描画する座標など設定
     center_x, center_y = base_img.size[0]//2, base_img.size[1]//2
     radius_outer = 180
     radius_inner = 145
 
-    # 外側と内側の赤い円を描く
     draw.ellipse(
         [(center_x - radius_outer, center_y - radius_outer), (center_x + radius_outer, center_y + radius_outer)],
         outline="red", width=8
@@ -45,27 +38,23 @@ def create_ticket_stamp(
         outline="red", width=8
     )
 
-    # 「入場済」テキストを上下に描画（赤色）
     entered_text = "入場済"
     text_w, text_h = draw.textsize(entered_text, font=font_medium)
     draw.text((center_x - text_w/2, center_y - radius_outer + 20), entered_text, fill="red", font=font_medium)
     draw.text((center_x - text_w/2, center_y + radius_outer - text_h - 20), entered_text, fill="red", font=font_medium)
 
-    # 時刻を中央に大きく描画（赤色）
     time_w, time_h = draw.textsize(timestamp, font=font_large)
     draw.text((center_x - time_w/2, center_y - time_h/2), timestamp, fill="red", font=font_large)
 
-    # 英単語＋番号を右下に描画（赤色）
     code_text = f"{english_word} {ticket_code}"
     code_w, code_h = draw.textsize(code_text, font=font_small)
     draw.text((base_img.size[0] - code_w - 20, base_img.size[1] - code_h - 20), code_text, fill="red", font=font_small)
 
-    # 加工画像を保存
     merged.save(output_image_path)
     merged.show()
 
-# 使い方の例
 if __name__ == "__main__":
+    # 実行例（画像ファイル名は自分の環境に合わせて変えてください）
     create_ticket_stamp(
         input_image_path="your_uploaded_picture.jpg",
         output_image_path="ticket_with_stamp.png",
